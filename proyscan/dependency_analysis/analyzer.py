@@ -1,58 +1,39 @@
 # proyscan/dependency_analysis/analyzer.py
 from typing import List, Optional, Set, Dict
-# Importar otros módulos necesarios si se implementa (ej: parsers específicos)
-# from .python_parser import analizar_python
-# from .regex_parser import analizar_regex
-from ..utils.path_utils import resolver_ruta_dependencia # Para futura resolución
 
-# Importar el modelo si se usa
+# Importar el parser específico de Python
+from .python_parser import analizar_python
+# Importar el modelo
 from ..models import DependencyInfo
+# (Dejar placeholders para otros parsers si los tienes)
+# from .regex_parser import analizar_regex
 
-def analizar_dependencias(contenido: List[str], lenguaje: str, ruta_archivo: str, archivos_proyecto: Set[str], dir_proyecto: str) -> Optional[List[DependencyInfo]]:
+def analizar_dependencias(
+    contenido: List[str],
+    lenguaje: str,
+    ruta_archivo: str,
+    archivos_proyecto: Set[str],
+    dir_proyecto: str # Aunque no lo usemos directamente aquí, puede ser útil para otros parsers
+) -> Optional[List[DependencyInfo]]:
     """
     Función principal para analizar dependencias de un archivo.
     Selecciona el método adecuado según el lenguaje.
-    (IMPLEMENTACIÓN FUTURA - Placeholder para Fase 1+)
-
-    Args:
-        contenido: Lista de líneas del archivo.
-        lenguaje: Lenguaje detectado del archivo.
-        ruta_archivo: Ruta relativa del archivo dentro del proyecto.
-        archivos_proyecto: Set con todas las rutas relativas de archivos válidos en el proyecto.
-        dir_proyecto: Ruta absoluta del directorio raíz del proyecto.
-
-    Returns:
-        Lista de diccionarios de dependencias, o None si no se analiza/no aplica.
     """
-    print(f"[DEBUG Placeholder] Analizar dependencias para: {ruta_archivo} (Lenguaje: {lenguaje})")
+    # print(f"[DEBUG Analyzer] Analizando: {ruta_archivo} (Lenguaje: {lenguaje})") # Menos verboso
 
     if lenguaje == 'python':
-        # Llamar a python_parser.py (Fase 1)
-        # dependencias_encontradas = analizar_python(contenido, ruta_archivo)
-        pass
-    elif lenguaje in ['html', 'css', 'javascript', 'php']:
-        # Llamar a regex_parser.py (Fase 2) o parsers específicos (Fase 3)
-        # dependencias_encontradas = analizar_regex(contenido, lenguaje, ruta_archivo)
-        pass
-    # Añadir más lenguajes si es necesario
+        # Llamar al parser específico de Python
+        # No necesitamos dir_proyecto aquí porque trabajamos con rutas relativas y el set
+        return analizar_python(contenido, ruta_archivo, archivos_proyecto)
 
-    # --- Lógica común de resolución y clasificación (irá aquí o en los parsers) ---
-    dependencias_clasificadas: List[DependencyInfo] = []
-    # Ejemplo conceptual:
-    # for ref in dependencias_encontradas:
-    #     ruta_resuelta = resolver_ruta_dependencia(ref, ruta_archivo, dir_proyecto)
-    #     if ruta_resuelta and ruta_resuelta in archivos_proyecto:
-    #         tipo = 'interna'
-    #         path_final = ruta_resuelta
-    #     elif ruta_resuelta: # Resuelta pero no encontrada
-    #         tipo = 'interna_rota'
-    #         path_final = ruta_resuelta
-    #     # ... lógica para externa, url, biblioteca ...
-    #     else:
-    #         tipo = 'externa' # Asumir externa/biblioteca si no se resuelve a ruta local
-    #         path_final = ref
-    #
-    #     dependencias_clasificadas.append({'tipo': tipo, 'path': path_final})
+    # --- Placeholder para otros lenguajes (Fase 2+) ---
+    # elif lenguaje in ['html', 'css', 'javascript', 'php']:
+    #     # return analizar_regex(contenido, lenguaje, ruta_archivo, archivos_proyecto, dir_proyecto)
+    #     print(f"      * Análisis de dependencias para '{lenguaje}' aún no implementado.")
+    #     return [] # Devolver lista vacía por ahora
+    # -------------------------------------------------
 
-    # Por ahora, en Fase 0, devolvemos None o lista vacía
-    return None # O return []
+    else:
+        # Lenguaje no soportado para análisis de dependencias
+        # print(f"      * Análisis de dependencias no soportado para '{lenguaje}'.")
+        return None # O devolver lista vacía si se prefiere consistencia
