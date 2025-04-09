@@ -8,6 +8,7 @@ ARCHIVO_IGNORAR = ".ignore"
 
 # --- Constantes de Procesamiento ---
 EXTENSIONES_BINARIAS = {
+    # ... (lista sin cambios) ...
     '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.ico',
     '.mp3', '.wav', '.ogg', '.flac', '.aac',
     '.mp4', '.avi', '.mkv', '.mov', '.wmv',
@@ -23,6 +24,7 @@ EXTENSIONES_BINARIAS = {
 }
 
 MAPA_LENGUAJES = {
+    # ... (mapa sin cambios) ...
     '.py': 'python', '.js': 'javascript', '.html': 'html', '.htm': 'html',
     '.css': 'css', '.json': 'json', '.xml': 'xml', '.yaml': 'yaml', '.yml': 'yaml',
     '.md': 'markdown', '.txt': 'text', '.log': 'log', '.sh': 'shell',
@@ -37,19 +39,5 @@ LENGUAJE_DEFECTO = 'text'
 MAX_TAMANO_MB_TEXTO = 5
 MAX_TAMANO_BYTES_TEXTO = MAX_TAMANO_MB_TEXTO * 1024 * 1024
 
-# --- Determinación del Directorio del Script/Proyecto ---
-# Se asume que el script principal (proyscan.py) o el punto de entrada
-# estará en la raíz del proyecto escaneado.
-try:
-    # Si __file__ está definido (ejecución normal)
-    # Queremos la ruta del directorio que *contiene* el script de entrada (proyscan.py)
-    # que estará UN NIVEL POR ENCIMA del paquete 'proyscan'
-    DIR_PROYECTO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-except NameError:
-    # Si se ejecuta interactivamente o __file__ no está, usar directorio actual
-    DIR_PROYECTO = os.getcwd()
-    print(f"Advertencia: No se pudo determinar DIR_PROYECTO desde __file__, usando directorio actual: {DIR_PROYECTO}")
-
-# --- Otras Configuraciones (Placeholder) ---
-# Aquí podrían ir flags para habilitar/deshabilitar análisis de dependencias, etc.
-ANALIZAR_DEPENDENCIAS = True # Preparado para el futuro
+# --- Otras Configuraciones ---
+ANALIZAR_DEPENDENCIAS = True # Mantenemos esto

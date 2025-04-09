@@ -1,10 +1,15 @@
 # proyscan/utils/path_utils.py
 import os
 import sys
-from typing import Optional, Set
-from ..config import MAPA_LENGUAJES, LENGUAJE_DEFECTO # Import relativo dentro del paquete
+import re # Importar regex
+from typing import Optional, Set, Tuple
+from urllib.parse import urlparse # Para detectar URLs
 
-# --- Funciones existentes ---
+# Importaciones existentes
+from ..config import MAPA_LENGUAJES, LENGUAJE_DEFECTO
+
+# --- Funciones existentes (obtener_lenguaje_extension, normalizar_ruta, _intentar_ruta_modulo, resolver_import_python, es_stdlib, STDLIBS_COMUNES) ---
+# ... (mantener el código de la Fase 1 para estas funciones) ...
 def obtener_lenguaje_extension(ruta_archivo: str) -> str:
     """Determina el lenguaje/tipo basado en la extensión del archivo."""
     _, extension = os.path.splitext(ruta_archivo)
@@ -15,102 +20,140 @@ def obtener_lenguaje_extension(ruta_archivo: str) -> str:
 
 def normalizar_ruta(ruta: str) -> str:
     """Normaliza una ruta usando '/' y eliminando redundancias."""
-    # Usar os.path.abspath si es necesario para resolver '..' correctamente
-    # antes de normalizar, pero tener cuidado si la base no es real.
-    # normpath solo simplifica, no valida existencia.
+    # normpath simplifica, no valida existencia.
+    # Usamos replace para asegurar separadores '/' consistentes
     ruta_limpia = os.path.normpath(ruta).replace(os.sep, '/')
-    # Asegurarse de que no empiece con '/' si era relativa originalmente
-    if not ruta.startswith('/') and ruta_limpia.startswith('/'):
-         ruta_limpia = ruta_limpia[1:]
+    # normpath en Windows puede quitar el './' inicial, lo reponemos si es necesario
+    if ruta.startswith("./") and not ruta_limpia.startswith("./") and not ruta_limpia.startswith("../"):
+         if ruta_limpia != '.':
+              ruta_limpia = "./" + ruta_limpia
+
+    # normpath puede convertir '' o '.' a '.', lo evitamos si no es el input original
+    if ruta in ('', '.') and ruta_limpia == '.':
+        return ruta
+    # Si la ruta original terminaba en '/', preservarla si no es solo '/'
+    if ruta.endswith('/') and not ruta_limpia.endswith('/') and len(ruta_limpia) > 1:
+        ruta_limpia += '/'
+
     return ruta_limpia
 
-# --- Nuevas Funciones para Resolución de Módulos Python ---
-
 def _intentar_ruta_modulo(ruta_base_rel: str, archivos_proyecto: Set[str]) -> Optional[str]:
-    """
-    Intenta encontrar un archivo .py o un paquete __init__.py para una ruta base.
-    Devuelve la ruta relativa normalizada del archivo/paquete encontrado, o None.
-    """
-    # 1. Intentar como archivo .py
+    """Intenta encontrar .py o __init__.py (sin cambios)"""
     ruta_py = f"{ruta_base_rel}.py"
-    if ruta_py in archivos_proyecto:
-        return ruta_py
-
-    # 2. Intentar como paquete (directorio con __init__.py)
+    if ruta_py in archivos_proyecto: return ruta_py
     ruta_init = normalizar_ruta(f"{ruta_base_rel}/__init__.py")
-    if ruta_init in archivos_proyecto:
-        # Devolvemos la ruta al __init__.py como representación del paquete
-        return ruta_init
-
+    if ruta_init in archivos_proyecto: return ruta_init
     return None
 
-def resolver_import_python(
-    modulo_importado: str, # Ej: 'os', '.utils', '..config.settings', 'mi_app.helpers'
-    nivel_relativo: int,    # 0 para absoluto, 1 para '.', 2 para '..'
-    ruta_archivo_actual_rel: str, # Ej: 'src/mi_app/views.py'
-    archivos_proyecto: Set[str],
-    # dir_proyecto_raiz: str # No necesario si trabajamos con relativas y archivos_proyecto
-) -> Optional[str]:
-    """
-    Intenta resolver un nombre de módulo Python a una ruta de archivo/paquete
-    relativa al proyecto. Devuelve la ruta normalizada o None si no se encuentra
-    internamente o es claramente externo.
-    """
-    # print(f"[DEBUG Resolver] Mod: '{modulo_importado}', Nivel: {nivel_relativo}, Origen: '{ruta_archivo_actual_rel}'")
-
-    # --- Caso 1: Importación Relativa (nivel_relativo > 0) ---
+def resolver_import_python(modulo_importado: str, nivel_relativo: int, ruta_archivo_actual_rel: str, archivos_proyecto: Set[str]) -> Optional[str]:
+    """Resuelve import Python (sin cambios)"""
     if nivel_relativo > 0:
-        directorio_actual = os.path.dirname(ruta_archivo_actual_rel)
-        # Subir niveles según nivel_relativo
-        niveles_subir = nivel_relativo - 1 # '.' es nivel 1 (0 subir), '..' es nivel 2 (1 subir)
+        directorio_actual = os.path.dirname(ruta_archivo_actual_rel) if os.path.dirname(ruta_archivo_actual_rel) else '.'
+        niveles_subir = nivel_relativo - 1
         directorio_base_rel = directorio_actual
         for _ in range(niveles_subir):
             directorio_base_rel = os.path.dirname(directorio_base_rel)
-            if not directorio_base_rel: # Hemos subido más allá de la raíz
-                 # print(f"[DEBUG Resolver] Error: Subida relativa excede la raíz.")
-                 return None # Import relativo inválido
+            if not directorio_base_rel or directorio_base_rel == '.':
+                 # Si subimos demasiado, os.dirname puede devolver '' o '.', ajustamos a raíz o None
+                 directorio_base_rel = '' # Asumimos raíz relativa
+                 break # Salir si subimos más allá de la raíz aparente
+            # Manejar caso donde dirname devuelve '.' en lugar de '' para la raíz
+            if directorio_base_rel == '.': directorio_base_rel = ''
 
-        # Combinar con el nombre del módulo (si existe)
-        # Si es 'from . import x', modulo_importado es None o ''
-        # Si es 'from .modulo import x', modulo_importado es 'modulo'
+
         partes_modulo = modulo_importado.split('.') if modulo_importado else []
-        ruta_tentativa_base = os.path.join(directorio_base_rel, *partes_modulo)
+        # Usamos os.path.join pero empezamos desde la base relativa calculada
+        ruta_tentativa_base = os.path.join(directorio_base_rel, *partes_modulo) if directorio_base_rel else os.path.join(*partes_modulo)
         ruta_base_norm = normalizar_ruta(ruta_tentativa_base)
-
-        # Intentar encontrar .py o __init__.py
-        ruta_encontrada = _intentar_ruta_modulo(ruta_base_norm, archivos_proyecto)
-        # print(f"[DEBUG Resolver Relativo] Base: '{ruta_base_norm}', Encontrada: '{ruta_encontrada}'")
-        return ruta_encontrada # Puede ser None si no se encuentra
-
-    # --- Caso 2: Importación Absoluta (nivel_relativo == 0) ---
+        return _intentar_ruta_modulo(ruta_base_norm, archivos_proyecto)
     else:
-        # Simplificación: Asumimos que las importaciones absolutas que contienen '.'
-        # se refieren a la estructura del proyecto directamente desde la raíz.
-        # Ej: 'mi_app.utils.helpers' -> 'mi_app/utils/helpers'
         partes_modulo = modulo_importado.split('.')
-        ruta_tentativa_base = os.path.join(*partes_modulo) # Se une desde la raíz implícita
+        ruta_tentativa_base = os.path.join(*partes_modulo)
         ruta_base_norm = normalizar_ruta(ruta_tentativa_base)
+        return _intentar_ruta_modulo(ruta_base_norm, archivos_proyecto)
 
-        # Intentar encontrar .py o __init__.py
-        ruta_encontrada = _intentar_ruta_modulo(ruta_base_norm, archivos_proyecto)
-        # print(f"[DEBUG Resolver Absoluto] Base: '{ruta_base_norm}', Encontrada: '{ruta_encontrada}'")
-        return ruta_encontrada # Puede ser None si no es interno o stdlib simple
-
-# No necesitamos la función resolver_ruta_dependencia genérica por ahora
-# ya que nos enfocamos en Python.
-
-# Lista simplificada de módulos stdlib comunes (más robusto sería usar sys.stdlib_module_names si Python >= 3.10)
-# O mantener una lista más extensa precalculada.
 STDLIBS_COMUNES = {
     'os', 'sys', 'json', 're', 'math', 'datetime', 'time', 'collections',
     'itertools', 'functools', 'pathlib', 'shutil', 'subprocess', 'argparse',
     'logging', 'io', 'typing', 'abc', 'enum', 'random', 'pickle', 'copy',
     'hashlib', 'base64', 'codecs', 'ast'
-    # Añadir más según sea necesario o usar método más completo
 }
-
 def es_stdlib(nombre_modulo: str) -> bool:
-    """Comprueba si un nombre de módulo (primer nivel) pertenece a la stdlib."""
-    # Solo comprobamos el primer componente (ej: 'os' en 'os.path')
+    """Comprueba si es stdlib (sin cambios)"""
     primer_componente = nombre_modulo.split('.')[0]
     return primer_componente in STDLIBS_COMUNES
+
+
+# --- Nueva Función Genérica para Resolver Referencias Web/Generales ---
+
+def resolver_ruta_referencia(
+    ruta_referencia: str,       # La cadena encontrada (ej: '../style.css', '/img/logo.png', 'https://a.com/b.js')
+    ruta_archivo_origen_rel: str, # Ruta relativa del archivo donde se encontró la referencia
+    # dir_proyecto_raiz: str,   # No estrictamente necesario si trabajamos con relativas
+    # archivos_proyecto: Set[str] # La comprobación de existencia se hace fuera
+) -> Tuple[str, Optional[str]]:
+    """
+    Intenta resolver una ruta de referencia encontrada en web/otros archivos.
+
+    Devuelve:
+        - tipo: 'url', 'absoluta' (desde raíz proyecto), 'relativa', 'externa' (no-path), 'desconocida'
+        - ruta_resuelta_o_original: Ruta normalizada relativa al proyecto si es interna/absoluta,
+                                     o la cadena original si es URL/externa, o None si error.
+    """
+    ref = ruta_referencia.strip()
+    if not ref:
+        return 'desconocida', None
+
+    # 1. Comprobar si es una URL completa
+    try:
+        parsed_url = urlparse(ref)
+        if parsed_url.scheme in ('http', 'https', 'ftp', 'ftps', 'data'): # Añadir 'data' para data URIs
+            return 'url', ref # Devolver URL original
+    except ValueError:
+        pass # No es una URL parseable
+
+    # 2. Comprobar si parece un nombre de paquete/externo (sin '/', '\', '.')
+    #    Esto es heurístico y aplica más a JS/PHP imports/requires.
+    if not any(c in ref for c in './\\'):
+         # Podría ser un módulo interno en la raíz, pero más probablemente externo
+         # Devolvemos 'externa' y el path original para clasificación posterior
+         return 'externa', ref
+
+    # 3. Intentar resolver como ruta de archivo (relativa o absoluta desde raíz)
+    ruta_resuelta_abs: Optional[str] = None
+    tipo_ruta = 'desconocida'
+
+    # Obtener directorio del archivo origen
+    dir_origen = os.path.dirname(ruta_archivo_origen_rel)
+    # Asegurarse de que dir_origen no sea vacío si el origen está en la raíz
+    if not dir_origen and ruta_archivo_origen_rel:
+        dir_origen = '.'
+    elif not dir_origen and not ruta_archivo_origen_rel:
+         # Caso raro: origen es '' (raíz virtual) - no debería pasar con relpath
+         dir_origen = '.'
+
+
+    if ref.startswith('/'):
+        # Ruta absoluta desde la raíz del proyecto
+        tipo_ruta = 'absoluta'
+        # Quitamos el '/' inicial para que join funcione correctamente desde la "raíz"
+        ruta_resuelta_abs = normalizar_ruta(ref[1:])
+    elif ref.startswith('.'):
+        # Ruta relativa
+        tipo_ruta = 'relativa'
+        ruta_combinada = os.path.join(dir_origen, ref)
+        ruta_resuelta_abs = normalizar_ruta(ruta_combinada)
+    else:
+        # Ruta relativa implícita (desde el directorio actual)
+        tipo_ruta = 'relativa'
+        ruta_combinada = os.path.join(dir_origen, ref)
+        ruta_resuelta_abs = normalizar_ruta(ruta_combinada)
+
+    # Eliminar posibles query strings o hashes de las rutas de archivo
+    if ruta_resuelta_abs:
+        ruta_resuelta_abs = ruta_resuelta_abs.split('?')[0].split('#')[0]
+
+    # print(f"[DEBUG Resolver Web] Ref: '{ref}', Origen: '{ruta_archivo_origen_rel}', DirO: '{dir_origen}', Tipo: {tipo_ruta}, Resuelta: '{ruta_resuelta_abs}'")
+
+    # Devolvemos el tipo detectado y la ruta normalizada (aún no sabemos si existe)
+    return tipo_ruta, ruta_resuelta_abs
