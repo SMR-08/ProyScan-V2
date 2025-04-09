@@ -2,7 +2,7 @@
 
 **ProyScan V2** (`proyscan.py`) es una herramienta de línea de comandos escrita en Python diseñada para analizar recursivamente un directorio de proyecto. Genera una representación visual de la estructura de archivos y un archivo JSON detallado que contiene metadatos, el contenido de los archivos de texto y un análisis básico de las dependencias entre archivos para lenguajes soportados.
 
-El objetivo principal es proporcionar una instantánea comprensible de la organización y las interconexiones de un proyecto, útil para análisis, documentación o como entrada para otras herramientas (Principalmente modelos de lenguaje de IA, como herramienta para migrar un proyecto que hayas echo con por ejempl,o ChatGPT a Gemini 2.5 si tener que pasar 1000 archivos, solo 2).
+El objetivo principal es proporcionar una instantánea comprensible de la organización y las interconexiones de un proyecto, útil para análisis, documentación o como entrada para otras herramientas (Principalmente modelos de lenguaje de IA, como herramienta para migrar un proyecto que hayas echo con por ejempl,o ChatGPT a Gemini 2.5 sin tener que pasar 1000 archivos, solo 2).
 
 ## Características Principales
 
