@@ -1,0 +1,5 @@
+# Dependencias para ProyScan
+chardet
+beautifulsoup4
+lxml         # Parser eficiente recomendado para BeautifulSoup
+tinycss2

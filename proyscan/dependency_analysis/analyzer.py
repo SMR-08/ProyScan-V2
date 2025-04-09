@@ -3,7 +3,9 @@ from typing import List, Optional, Set, Dict
 
 # Importar parsers específicos
 from .python_parser import analizar_python
-from .regex_parser import analizar_regex # Importar el nuevo parser Regex
+from .regex_parser import analizar_regex # Lo mantenemos para JS y PHP por ahora
+from .html_parser import analizar_html   # Nuevo parser HTML
+from .css_parser import analizar_css     # Nuevo parser CSS
 # Importar el modelo
 from ..models import DependencyInfo
 
@@ -12,7 +14,7 @@ def analizar_dependencias(
     lenguaje: str,
     ruta_archivo: str,
     archivos_proyecto: Set[str],
-    dir_proyecto: str # Necesario para el regex_parser
+    dir_proyecto: str
 ) -> Optional[List[DependencyInfo]]:
     """
     Función principal para analizar dependencias de un archivo.
@@ -20,16 +22,17 @@ def analizar_dependencias(
     """
 
     if lenguaje == 'python':
-        # Llamar al parser específico de Python
         return analizar_python(contenido, ruta_archivo, archivos_proyecto)
-
-    # --- LLAMADA AL PARSER REGEX PARA LENGUAJES WEB ---
-    elif lenguaje in ['html', 'css', 'javascript', 'php']:
-        # Pasar dir_proyecto que puede ser necesario para resolver rutas absolutas '/'
+    # --- Usar parsers específicos para HTML y CSS ---
+    elif lenguaje == 'html':
+        return analizar_html(contenido, ruta_archivo, archivos_proyecto)
+    elif lenguaje == 'css':
+        return analizar_css(contenido, ruta_archivo, archivos_proyecto)
+    # ----------------------------------------------
+    # --- Mantener Regex para JS y PHP por ahora ---
+    elif lenguaje in ['javascript', 'php']:
         return analizar_regex(contenido, lenguaje, ruta_archivo, archivos_proyecto, dir_proyecto)
-    # -------------------------------------------------
-
+    # ----------------------------------------------
     else:
-        # Lenguaje no soportado para análisis de dependencias
-        # print(f"      * Análisis de dependencias no soportado para '{lenguaje}'.")
+        # Lenguaje no soportado
         return None
