@@ -71,18 +71,33 @@ def ejecutar_escaneo(
                 del directorios[i]
         # Registrar archivos
         for nombre_archivo in archivos:
-            ruta_rel_archivo = os.path.relpath(os.path.join(raiz, nombre_archivo), directorio_objetivo)
-            ignorar_archivo, razon_archivo = debe_ignorar(ruta_rel_archivo, False, patrones_ignorar, nombre_script_ignorar)
-            ruta_norm = normalizar_ruta(ruta_rel_archivo)
-            if not ignorar_archivo:
-                if ruta_norm != '.': archivos_del_proyecto.add(ruta_norm)
-            else:
-                if ruta_norm != '.':
-                     logger.debug(f"Ignorando Archivo: {ruta_norm} (Razón: {razon_archivo})") # DEBUG
-                     items_ignorados_arbol.add(ruta_norm)
+            ruta_completa = os.path.join(raiz, nombre_archivo)
+            try:
+                 # --- Calcular ruta relativa ---
+                 ruta_rel_archivo = os.path.relpath(ruta_completa, directorio_objetivo)
+                 logger.debug(f"  Archivo encontrado: '{ruta_rel_archivo}'") # NUEVO DEBUG
+
+                 # --- Llamar a debe_ignorar ---
+                 ignorar_archivo, razon_archivo = debe_ignorar(ruta_rel_archivo, False, patrones_ignorar, nombre_script_ignorar)
+                 ruta_norm = normalizar_ruta(ruta_rel_archivo)
+
+                 if not ignorar_archivo:
+                     if ruta_norm != '.':
+                          archivos_del_proyecto.add(ruta_norm)
+                          # --- Log de qué se añade ---
+                          logger.debug(f"    -> Añadido a archivos_del_proyecto: '{ruta_norm}'") # NUEVO DEBUG
+                 else:
+                     if ruta_norm != '.':
+                          # Log existente
+                          logger.debug(f"    -> Ignorando Archivo (no se añade a procesar): {ruta_norm} (Razón: {razon_archivo})")
+                          items_ignorados_arbol.add(ruta_norm)
+            except Exception as e_relpath:
+                 # Error calculando ruta relativa (raro pero posible)
+                 logger.error(f"Error calculando ruta relativa para {ruta_completa}: {e_relpath}")
 
     logger.info(f"Fase 1: {len(archivos_del_proyecto)} archivos identificados para procesamiento.")
-
+    logger.debug(f"Archivos a procesar (set): {archivos_del_proyecto}") # NUEVO DEBUG
+    logger.debug(f"Items a ignorar en árbol (set): {items_ignorados_arbol}") # NUEVO DEBUG
     # --- Fase 2 (usar logger) ---
     logger.info("Fase 2: Procesando archivos y extrayendo información...")
     for ruta_relativa_norm in sorted(list(archivos_del_proyecto)):

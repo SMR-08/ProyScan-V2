@@ -1,0 +1,191 @@
+IUITLM---DAW-1/ (Directorio Raiz)
+├── API/
+│   ├── PHP/
+│   │   ├── ejercicios_php/
+│   │   │   ├── EJ01/
+│   │   │   │   └── EJ1.php
+│   │   │   ├── EJ02/
+│   │   │   │   ├── EJ2 URL.php
+│   │   │   │   └── EJ2.php
+│   │   │   ├── EJ03/
+│   │   │   │   └── EJ3.php
+│   │   │   ├── EJ04/
+│   │   │   │   └── EJ4.php
+│   │   │   ├── EJ05/
+│   │   │   │   └── EJ5.php
+│   │   │   ├── EJ06/
+│   │   │   │   └── EJ6.php
+│   │   │   ├── EJ07/
+│   │   │   │   └── EJ7.php
+│   │   │   ├── EJ08/
+│   │   │   │   └── EJ8.php
+│   │   │   ├── EJ09/
+│   │   │   │   ├── EJ9.php
+│   │   │   │   └── datos.txt
+│   │   │   └── README.md
+│   │   └── api_router.php
+│   ├── Python/
+│   │   ├── ejercicios_python/
+│   │   │   ├── EJ01/
+│   │   │   │   ├── EJ1.py
+│   │   │   │   └── main.py
+│   │   │   ├── EJ02/
+│   │   │   │   └── EJ2.py
+│   │   │   ├── EJ03/
+│   │   │   │   └── EJ3.py
+│   │   │   ├── EJ04/
+│   │   │   │   ├── EJ4.py
+│   │   │   │   └── main.py
+│   │   │   ├── EJ05/
+│   │   │   │   ├── EJ5.py
+│   │   │   │   └── main.py
+│   │   │   ├── EJ06/
+│   │   │   │   ├── EJ6.py
+│   │   │   │   ├── main.py
+│   │   │   │   └── persona.py
+│   │   │   ├── EJ07/
+│   │   │   │   └── EJ7.py
+│   │   │   ├── EJ08/
+│   │   │   │   └── EJ8.py
+│   │   │   ├── __init__.py
+│   │   │   └── paste
+│   │   ├── __init__.py
+│   │   ├── app.py
+│   │   ├── db.py
+│   │   ├── requisitos.txt
+│   │   └── test_db.py
+│   └── api.dockerfile
+├── BBDD/
+│   └── Banco/
+│       └── Banco.sql
+├── Introduccion/
+│   ├── angular/
+│   │   ├── app-test/
+│   │   │   ├── public/
+│   │   │   ├── src/
+│   │   │   │   ├── app/
+│   │   │   │   │   ├── mi-primera-pagina/
+│   │   │   │   │   │   ├── mi-primera-pagina.component.css
+│   │   │   │   │   │   ├── mi-primera-pagina.component.html
+│   │   │   │   │   │   ├── mi-primera-pagina.component.spec.ts
+│   │   │   │   │   │   └── mi-primera-pagina.component.ts
+│   │   │   │   │   ├── app.component.css
+│   │   │   │   │   ├── app.component.html
+│   │   │   │   │   ├── app.component.spec.ts
+│   │   │   │   │   ├── app.component.ts
+│   │   │   │   │   ├── app.config.ts
+│   │   │   │   │   └── app.routes.ts
+│   │   │   │   ├── index.html
+│   │   │   │   ├── main.ts
+│   │   │   │   └── styles.css
+│   │   │   ├── .editorconfig
+│   │   │   ├── .gitignore
+│   │   │   ├── README.md
+│   │   │   ├── angular-nginx.conf
+│   │   │   ├── angular.dockerfile
+│   │   │   ├── angular.json
+│   │   │   ├── package-lock.json
+│   │   │   ├── package.json
+│   │   │   ├── tsconfig.app.json
+│   │   │   ├── tsconfig.json
+│   │   │   └── tsconfig.spec.json
+│   │   └── package-lock.json
+│   ├── docker/
+│   │   ├── nginx/
+│   │   │   ├── angular.conf
+│   │   │   ├── api.conf
+│   │   │   └── default.conf
+│   │   ├── www/
+│   │   │   ├── api_php/
+│   │   │   ├── css/
+│   │   │   │   └── estilos.css
+│   │   │   ├── js/
+│   │   │   │   ├── banco_acciones.js
+│   │   │   │   ├── hub.js
+│   │   │   │   └── registro.js
+│   │   │   ├── php/
+│   │   │   │   ├── acceso.php
+│   │   │   │   └── cerrar_sesion.php
+│   │   │   ├── acceso.html
+│   │   │   ├── banco.php
+│   │   │   ├── index.html
+│   │   │   ├── index.php
+│   │   │   └── registro.html
+│   │   ├── nginx.dockerfile
+│   │   └── php.dockerfile
+│   ├── javascript/
+│   │   ├── EJ1.js
+│   │   ├── EJ2.js
+│   │   └── EJ3.js
+│   ├── php/
+│   │   ├── EJ01/
+│   │   │   └── EJ1.php
+│   │   ├── EJ02/
+│   │   │   ├── EJ2 URL.php
+│   │   │   └── EJ2.php
+│   │   ├── EJ03/
+│   │   │   └── EJ3.php
+│   │   ├── EJ04/
+│   │   │   └── EJ4.php
+│   │   ├── EJ05/
+│   │   │   └── EJ5.php
+│   │   ├── EJ06/
+│   │   │   └── EJ6.php
+│   │   ├── EJ07/
+│   │   │   └── EJ7.php
+│   │   ├── EJ08/
+│   │   │   └── EJ8.php
+│   │   ├── EJ09/
+│   │   │   ├── EJ9.php
+│   │   │   └── datos.txt
+│   │   └── README.md
+│   └── python/
+│       ├── EJ01/
+│       │   ├── EJ1.py
+│       │   └── main.py
+│       ├── EJ02/
+│       │   └── EJ2.py
+│       ├── EJ03/
+│       │   └── EJ3.py
+│       ├── EJ04/
+│       │   ├── EJ4.py
+│       │   └── main.py
+│       ├── EJ05/
+│       │   ├── EJ5.py
+│       │   └── main.py
+│       ├── EJ06/
+│       │   ├── EJ6.py
+│       │   ├── main.py
+│       │   └── persona.py
+│       ├── EJ07/
+│       │   └── EJ7.py
+│       └── EJ08/
+│           └── EJ8.py
+├── VIP/
+│   └── html original/
+│       ├── VIP_Inicio_files/
+│       │   ├── bootstrap.min.css
+│       │   ├── bootstrap.min.js
+│       │   ├── font-awesome.min.css
+│       │   ├── icon.css
+│       │   ├── jquery-2.1.4.min.js
+│       │   ├── style.css
+│       │   ├── theme.css
+│       │   └── theme.js
+│       └── VIP _ Inicio.htm
+├── tetris/
+│   ├── src/
+│   │   ├── __init__.py
+│   │   ├── configuracion.py
+│   │   ├── cuadricula.py
+│   │   ├── dibujo.py
+│   │   ├── estado_juego.py
+│   │   ├── juego.py
+│   │   ├── pieza.py
+│   │   └── sonido.py
+│   ├── README.md
+│   ├── main.py
+│   └── requirements.txt
+├── .gitignore
+├── README.md
+└── docker-compose.yaml

@@ -1,0 +1,200 @@
+Gemini-test/ (Directorio Raiz)
+├── .git/
+│   ├── hooks/
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── push-to-checkout.sample
+│   │   ├── sendemail-validate.sample
+│   │   └── update.sample
+│   ├── info/
+│   │   └── exclude
+│   ├── logs/
+│   │   ├── refs/
+│   │   │   └── heads/
+│   │   │       └── main
+│   │   └── HEAD
+│   ├── objects/
+│   │   ├── 04/
+│   │   │   └── 7a46877bea66db7472210ad8bc0c618679958a
+│   │   ├── 09/
+│   │   │   └── a6b861f7555ed66e548b26db80f9fadae72649
+│   │   ├── 0e/
+│   │   │   └── 757d07b4f7b1f679b4073f91d677c4316b9675
+│   │   ├── 18/
+│   │   │   └── f02fd76d5274e1d448dba3c0202c70f2e0cdef
+│   │   ├── 1a/
+│   │   │   └── 1c63c1d91ce2e105d59e5b008be605496fe1ee
+│   │   ├── 1f/
+│   │   │   └── 2b676a2a2c31e335a23fa4693a36fb64d98579
+│   │   ├── 24/
+│   │   │   └── 4952d72bd06354b5e42a2a9d5d633cade31c94
+│   │   ├── 26/
+│   │   │   ├── 2928dace0bcfac8840690fd2236db76114799f
+│   │   │   └── 9d930cc6beb50f5cbff548333ff5947adf04a9
+│   │   ├── 2a/
+│   │   │   └── 33d9171e4ff13d31d6b4beccb46ae5b60e2861
+│   │   ├── 2d/
+│   │   │   └── 48810986092432e896f8dbcd50670583ea9a38
+│   │   ├── 33/
+│   │   │   └── 775d159ce674702b50701ccffaab41c87718cf
+│   │   ├── 3d/
+│   │   │   └── 5b62aa1a06fc5ecbee50b1832f83c1be255e81
+│   │   ├── 45/
+│   │   │   └── 9fedf0753a077bd2d82c6c3a3dc30059e879d8
+│   │   ├── 4f/
+│   │   │   └── 24c46353d1f70f32f4fc8f075a2a5ab65787aa
+│   │   ├── 50/
+│   │   │   └── 86a74ef84729e91ddfb708797a5db09e5d687e
+│   │   ├── 52/
+│   │   │   └── a773298679e39d5c35b3e3fd06fa116ae5cdf4
+│   │   ├── 55/
+│   │   │   └── ba5b8c62fdf4b2a7a87e4194c4c6706f397e7c
+│   │   ├── 57/
+│   │   │   ├── 5b39fcc607f73c268fec8ba78fef8a5a250e65
+│   │   │   └── 5b9b9d47d2e7dbcbb85dee38c0b6af43308e65
+│   │   ├── 5e/
+│   │   │   └── c81c5382bca283308adec1dfdd99b532b5bd4e
+│   │   ├── 60/
+│   │   │   └── 6ab8e7f7fa408f1597ef120713447b2f9f043f
+│   │   ├── 61/
+│   │   │   └── 432bc8c17a642b9a09d11d9fa470104d8dfe20
+│   │   ├── 65/
+│   │   │   └── 7a6419a20a27e101d7dcda234f23bdf2283005
+│   │   ├── 67/
+│   │   │   └── 23e46589718f81ea4ca507f42fc6c080ad27bb
+│   │   ├── 73/
+│   │   │   └── c4b0449a6981d36adb2a16dd2ff835ec669494
+│   │   ├── 79/
+│   │   │   └── b2c724219bf218420857db784b3e182fee56eb
+│   │   ├── 7c/
+│   │   │   ├── f0c4d7e18dd5aeea366581f7015125e64153b6
+│   │   │   └── fcfcc69de5f56d031bfc15012dce59e9822193
+│   │   ├── 84/
+│   │   │   └── f24d5476dfb7862446f87dfee22f51646ab3bb
+│   │   ├── 87/
+│   │   │   └── 621eba5659a4d6991b0082715f3de87a93298a
+│   │   ├── 8d/
+│   │   │   └── 8950d5e0c839d7a56aa1a7e0b464d24e1a0ed9
+│   │   ├── 92/
+│   │   │   ├── 4cb56a8536d571b6e921a614bed444a6cb812d
+│   │   │   └── d50e9d0a85149df6f6f4e08ba9570d84c2faee
+│   │   ├── 9a/
+│   │   │   └── 6e3a4a8b8ee57ef69d4a7e24267133d00733b6
+│   │   ├── 9d/
+│   │   │   └── b57ec4779b52c8d0efc01df31a4d7f6af95698
+│   │   ├── 9f/
+│   │   │   └── 5c44043e0aee23d27bef458f203ac5534419e7
+│   │   ├── a2/
+│   │   │   └── f57f188a827f1f8157c973e85399073c4ee24c
+│   │   ├── a9/
+│   │   │   └── c7e4fb6e0357f43e93d57c7313f53fd9f310ff
+│   │   ├── aa/
+│   │   │   ├── 03c9c66b89f9f4298996fb755a5305b3695a59
+│   │   │   └── 42454b9d76d7daec3ee398063bfa54265865ae
+│   │   ├── ab/
+│   │   │   └── d5a24a71553b2f7fd90c0e9534d1a5ca194a39
+│   │   ├── ad/
+│   │   │   ├── b8232f3c61666ce2c8d3bb9b3c90e26ef221f4
+│   │   │   └── c27e00b5d6ea56cf4a044cad3b09e42ce6ee1a
+│   │   ├── ae/
+│   │   │   └── 98652efa584f78d20ff3609876fb0f6ccf2d6c
+│   │   ├── af/
+│   │   │   └── 67baef2cb2d4a0a2dabe1661f23cb187074909
+│   │   ├── b5/
+│   │   │   └── 9b50ee80457a24b00a718ce041aa1b03cb187d
+│   │   ├── b6/
+│   │   │   └── daceba37172873707bd55f99c5d4f6235c928a
+│   │   ├── b7/
+│   │   │   └── c166da9c274e2f33aec01afe2c0aadb5382b8e
+│   │   ├── b8/
+│   │   │   └── 39e4d9da8c5fb9fb1b3bfe1628522ed9e2a326
+│   │   ├── b9/
+│   │   │   └── 7bac89b54eabfb13b4cc540332f2f728c2539d
+│   │   ├── bd/
+│   │   │   └── f09b69f4a0a2a4927e62e79b82a499d3dee30e
+│   │   ├── c6/
+│   │   │   └── c615b4c114af8ab7be388ec973a4f0af9fe67e
+│   │   ├── ca/
+│   │   │   └── fa6365d17d5704d944121a42af797ee5111959
+│   │   ├── cc/
+│   │   │   └── d90d853c1fbd4fda8eccefd3e6054bb273943c
+│   │   ├── d0/
+│   │   │   ├── 0ee014c4ceb0f35b78a1b33b906646490a2b82
+│   │   │   └── bb3eebe50cc9f81158e72eef833d1e15cefa9c
+│   │   ├── d1/
+│   │   │   └── 304ef03b47e01cd9a856e48ecb586c9806be0b
+│   │   ├── d3/
+│   │   │   ├── 61c922671729bcd27cce13afc9177012f8fb1a
+│   │   │   └── f0b67c520e52250eec2abe3ea55c1ecabaeb22
+│   │   ├── d7/
+│   │   │   └── 964ed2f2291e9c381944d081539c73ea496a80
+│   │   ├── df/
+│   │   │   └── 58174e151a7fb7017a31d46ac86c24c5f2c16a
+│   │   ├── e6/
+│   │   │   └── 9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+│   │   ├── e8/
+│   │   │   └── f6e5f0c585b700bcd7dea74b5e5cd694ecdb08
+│   │   ├── ea/
+│   │   │   └── 6d219145c0ec5f1817b75d7beb93754479871e
+│   │   ├── fb/
+│   │   │   └── 5d4bd06403d55420848b80d01cc9d6d6d9edb8
+│   │   ├── fe/
+│   │   │   └── 0464963ebfa2233cc6bed59f93585a8a7affb9
+│   │   ├── ff/
+│   │   │   ├── 6e856f1d1a69f5414c74f41791b21050034649
+│   │   │   └── 7c50078536a06465d7b21503d4dfb7c47e5777
+│   │   ├── info/
+│   │   └── pack/
+│   ├── refs/
+│   │   ├── heads/
+│   │   │   └── main
+│   │   └── tags/
+│   ├── COMMIT_EDITMSG
+│   ├── HEAD
+│   ├── config
+│   ├── description
+│   └── index
+├── .pytest_cache/
+│   ├── v/
+│   │   └── cache/
+│   │       ├── nodeids
+│   │       └── stepwise
+│   ├── .gitignore
+│   ├── CACHEDIR.TAG
+│   └── README.md
+├── __pycache__/
+│   └── ProyScan.cpython-312-pytest-7.4.4.pyc
+├── tetris/
+│   ├── __pycache__/
+│   │   └── main.cpython-313.pyc
+│   ├── src/
+│   │   ├── __pycache__/
+│   │   │   ├── __init__.cpython-313.pyc
+│   │   │   ├── configuracion.cpython-313.pyc
+│   │   │   ├── cuadricula.cpython-313.pyc
+│   │   │   ├── dibujo.cpython-313.pyc
+│   │   │   ├── estado_juego.cpython-313.pyc
+│   │   │   ├── juego.cpython-313.pyc
+│   │   │   ├── pieza.cpython-313.pyc
+│   │   │   └── sonido.cpython-313.pyc
+│   │   ├── __init__.py
+│   │   ├── configuracion.py
+│   │   ├── cuadricula.py
+│   │   ├── dibujo.py
+│   │   ├── estado_juego.py
+│   │   ├── juego.py
+│   │   ├── pieza.py
+│   │   └── sonido.py
+│   ├── main.py
+│   └── requirements.txt
+├── archivos.bat
+└── ficheros.bat

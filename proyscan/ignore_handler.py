@@ -35,30 +35,35 @@ def cargar_patrones_ignorar(ruta_archivo_ignore: str) -> Set[str]:
 
 def debe_ignorar(ruta_relativa: str, es_directorio: bool, patrones: Set[str], nombre_script_principal: Optional[str]) -> Tuple[bool, Optional[str]]:
     """Comprueba si la ruta relativa coincide con algún patrón de ignorar."""
+    # --- Logging al inicio ---
+    logger.debug(f"--- debe_ignorar ---")
+    logger.debug(f"Comprobando: '{ruta_relativa}' (es_dir={es_directorio})")
+    logger.debug(f"Patrones a comprobar: {patrones}")
+    # ------------------------
+
     ruta_normalizada = os.path.normpath(ruta_relativa).replace(os.sep, '/')
     if ruta_normalizada == '.': ruta_normalizada = ''
 
     nombre_base = os.path.basename(ruta_normalizada) if ruta_normalizada else ''
 
-    # Logs de DEBUG para ver qué se está comprobando
-    logger.debug(f"Comprobando ignorar para: '{ruta_normalizada}' (es_dir={es_directorio})")
-
+    # Ignorar archivos propios (con logging)
     if nombre_script_principal and nombre_base == nombre_script_principal:
-        logger.debug(f"Ignorado por ser script principal: '{nombre_base}'")
+        logger.debug(f"  -> Ignorado por ser script principal.")
         return True, "script"
     if nombre_base == ARCHIVO_ESTRUCTURA:
-        logger.debug(f"Ignorado por ser archivo de estructura: '{nombre_base}'")
+        logger.debug(f"  -> Ignorado por ser archivo de estructura.")
         return True, "salida_estructura"
     if nombre_base == ARCHIVO_CONTENIDO:
-        logger.debug(f"Ignorado por ser archivo de contenido: '{nombre_base}'")
+        logger.debug(f"  -> Ignorado por ser archivo de contenido.")
         return True, "salida_contenido"
     if nombre_base == ARCHIVO_IGNORAR:
-        logger.debug(f"Ignorado por ser archivo ignore: '{nombre_base}'")
+        logger.debug(f"  -> Ignorado por ser archivo ignore.")
         return True, "archivo_ignorar"
 
     ruta_comparacion = ruta_normalizada
     if es_directorio and ruta_normalizada and not ruta_normalizada.endswith('/'):
         ruta_comparacion += '/'
+    logger.debug(f"  Ruta para comparación: '{ruta_comparacion}'") # DEBUG
 
     for patron in patrones:
         es_patron_dir = patron.endswith('/')
@@ -67,7 +72,7 @@ def debe_ignorar(ruta_relativa: str, es_directorio: bool, patrones: Set[str], no
 
         # 1. Coincidencia exacta
         if ruta_comparacion == patron:
-            logger.debug(f"    -> Coincidencia exacta!")
+            logger.debug(f"    -> Coincidencia exacta!") # DEBUG
             return True, f"coincidencia_exacta ({patron})"
 
         # 2. Coincidencia de nombre base
@@ -96,6 +101,7 @@ def debe_ignorar(ruta_relativa: str, es_directorio: bool, patrones: Set[str], no
         if es_patron_dir and ruta_comparacion.startswith(patron) and len(ruta_comparacion) > len(patron):
              logger.debug(f"    -> Coincidencia directorio padre!")
              return True, f"coincidencia_dir_padre ({patron})"
-
+        
+    logger.debug(f"  -> No ignorado por ningún patrón.") # DEBUG
     logger.debug(f"No ignorado: '{ruta_normalizada}'") # DEBUG final si no coincide
     return False, None
