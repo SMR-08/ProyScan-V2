@@ -24,7 +24,8 @@ def ejecutar_escaneo(
     directorio_objetivo: str,
     nombre_script_ignorar: Optional[str],
     directorio_salida_escaneo: str,
-    debug_mode: bool # Nuevo parámetro
+    debug_mode: bool,
+    ruta_ignore_especifica: Optional[str] = None # Nuevo parámetro
 ):
     """
     Función principal que ejecuta todo el proceso de escaneo y generación.
@@ -43,11 +44,24 @@ def ejecutar_escaneo(
     logger.info(f"Directorio de salida para este escaneo: {directorio_salida_escaneo}")
     if debug_mode: logger.debug("Modo Debug HABILITADO.")
 
-    # --- Carga de .ignore (usar logger) ---
-    ruta_ignore = os.path.join(directorio_objetivo, ARCHIVO_IGNORAR)
-    # La función cargar_patrones_ignorar ya usa print, la modificaremos
-    patrones_ignorar = cargar_patrones_ignorar(ruta_ignore) # Modificar esta función luego
-
+    # --- Carga de .ignore (usar específico si se proporciona) ---
+    ruta_ignore_a_usar = ruta_ignore_especifica
+    usando_ignore_temporal = False
+    if ruta_ignore_a_usar:
+        logger.info(f"Usando archivo .ignore específico: {ruta_ignore_a_usar}")
+        usando_ignore_temporal = True # Asumimos que si se pasa es el temporal
+    else:
+        # Buscar el .ignore en el directorio objetivo
+        ruta_ignore_a_usar = os.path.join(directorio_objetivo, ARCHIVO_IGNORAR)
+        logger.info(f"Buscando archivo .ignore en directorio objetivo: {ruta_ignore_a_usar}")    # La función cargar_patrones_ignorar ya usa print, la modificaremos
+    
+    patrones_ignorar = cargar_patrones_ignorar(ruta_ignore_a_usar)
+    if usando_ignore_temporal and not patrones_ignorar:
+         logger.warning("Se especificó un ignore temporal pero no se cargaron patrones de él.")
+    elif not usando_ignore_temporal and not patrones_ignorar and not os.path.exists(ruta_ignore_a_usar):
+         # Mensaje de advertencia de ignore_handler ya se mostró
+         pass
+    
     lista_final_archivos: List[FileObject] = []
     items_ignorados_arbol: Set[str] = set()
     archivos_del_proyecto: Set[str] = set()
@@ -104,9 +118,11 @@ def ejecutar_escaneo(
         ruta_completa = os.path.join(directorio_objetivo, ruta_relativa_norm.replace('/', os.sep))
         logger.info(f"  - Procesando: {ruta_relativa_norm}") # INFO es suficiente aquí
 
-        metadata: Metadata = { # ... (inicialización igual) ...
-            "path": ruta_relativa_norm,"size_bytes": None, "status": "unknown", "encoding": None,
-            "language": None, "line_count": None, "dependencias": None }
+        metadata: Metadata = {
+            "path": ruta_relativa_norm,
+            "size_bytes": None, "status": "unknown", "encoding": None,
+            "language": None, "line_count": None, "dependencies": None
+        }
         file_object: FileObject = { # ... (inicialización igual) ...
             "metadata": metadata, "content_lines": None, "error_message": None }
 
@@ -139,7 +155,7 @@ def ejecutar_escaneo(
                              lineas_contenido, lenguaje, ruta_relativa_norm,
                              archivos_del_proyecto, directorio_objetivo
                          )
-                         metadata["dependencias"] = lista_dependencias
+                         metadata["dependencies"] = lista_dependencias 
                 elif estado in ["read_error", "too_large"]:
                      # Usar logger.warning para advertencias visibles
                      logger.warning(f"      * Estado: {estado} en {ruta_relativa_norm} - {lineas_o_error}")
