@@ -32,18 +32,18 @@ class PythonImportVisitor(ast.NodeVisitor):
         )
 
         if ruta_resuelta_rel:
-            logger.debug(f"  -> Resuelto Internamente a: '{ruta_resuelta_rel}'") # DEBUG
-            dep_info = DependencyInfo(tipo='interna', path=ruta_resuelta_rel)
+            logger.debug(f"  -> Resuelto internalmente a: '{ruta_resuelta_rel}'") # DEBUG
+            dep_info = DependencyInfo(type='internal', path=ruta_resuelta_rel)
             self.dependencias_encontradas.add(tuple(sorted(dep_info.items())))
         else:
-            if nivel == 0: # Solo absolutos no resueltos son bibliotecas/externos
+            if nivel == 0: # Solo absolutos no resueltos son librarys/externos
                  mod_base = nombre_modulo.split('.')[0]
-                 logger.debug(f"  -> No resuelto internamente (Absoluto): Asumiendo Biblioteca/Externa '{mod_base}'") # DEBUG
+                 logger.debug(f"  -> No resuelto internalmente (Absoluto): Asumiendo library/external '{mod_base}'") # DEBUG
                  self.modulos_externos.add(mod_base)
             else: # Relativos no resueltos son rotos
                  path_display = f"{'.' * nivel}{nombre_modulo}" if nombre_modulo else '.' * nivel
-                 logger.debug(f"  -> No resuelto internamente (Relativo): Marcando como Rota '{path_display}'") # DEBUG
-                 dep_info = DependencyInfo(tipo='interna_rota', path=f"'{path_display}' desde '{self.ruta_actual_rel}'")
+                 logger.debug(f"  -> No resuelto internalmente (Relativo): Marcando como Rota '{path_display}'") # DEBUG
+                 dep_info = DependencyInfo(type='internal_broken', path=f"'{path_display}' desde '{self.ruta_actual_rel}'")
                  self.dependencias_encontradas.add(tuple(sorted(dep_info.items())))
 
 
@@ -63,9 +63,9 @@ class PythonImportVisitor(ast.NodeVisitor):
     def obtener_dependencias(self) -> List[DependencyInfo]:
         lista_final: List[DependencyInfo] = [dict(dep_tuple) for dep_tuple in self.dependencias_encontradas]
         for modulo_ext in sorted(list(self.modulos_externos)):
-             tipo = 'stdlib' if es_stdlib(modulo_ext) else 'biblioteca'
-             lista_final.append(DependencyInfo(tipo=tipo, path=modulo_ext))
-        lista_final.sort(key=lambda x: (x['tipo'], x['path']))
+             type = 'stdlib' if es_stdlib(modulo_ext) else 'library'
+             lista_final.append(DependencyInfo(type=type, path=modulo_ext))
+        lista_final.sort(key=lambda x: (x['type'], x['path']))
         logger.debug(f"Dependencias Python finales: {lista_final}") # DEBUG
         return lista_final
 

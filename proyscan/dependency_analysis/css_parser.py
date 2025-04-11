@@ -37,7 +37,7 @@ def analizar_css(
 
         for i, token in enumerate(rules):
             token_type = getattr(token, 'type', 'N/A')
-            # logger.debug(f"Procesando token CSS {i}: Tipo={token_type}") # DEBUG (Muy verboso)
+            # logger.debug(f"Procesando token CSS {i}: type={token_type}") # DEBUG (Muy verboso)
 
             # --- Buscar @import ---
             if token_type == 'at-rule':
@@ -118,29 +118,29 @@ def analizar_css(
             continue
 
         logger.debug(f"Resolviendo referencia cruda: '{ref}'") # DEBUG
-        tipo_ref, ruta_resuelta_o_original = resolver_ruta_referencia(ref, ruta_archivo_rel)
-        logger.debug(f"  -> Tipo Ref: '{tipo_ref}', Ruta/Original: '{ruta_resuelta_o_original}'") # DEBUG
+        type_ref, ruta_resuelta_o_original = resolver_ruta_referencia(ref, ruta_archivo_rel)
+        logger.debug(f"  -> type Ref: '{type_ref}', Ruta/Original: '{ruta_resuelta_o_original}'") # DEBUG
         dep_info: Optional[DependencyInfo] = None
         key_to_check = ruta_resuelta_o_original
 
         if not ruta_resuelta_o_original: continue
 
-        if tipo_ref == 'url': dep_info = DependencyInfo(tipo='url', path=ruta_resuelta_o_original)
-        elif tipo_ref == 'externa': dep_info = DependencyInfo(tipo='externa', path=ruta_resuelta_o_original)
-        elif tipo_ref in ['absoluta', 'relativa']:
+        if type_ref == 'url': dep_info = DependencyInfo(type='url', path=ruta_resuelta_o_original)
+        elif type_ref == 'external': dep_info = DependencyInfo(type='external', path=ruta_resuelta_o_original)
+        elif type_ref in ['absoluta', 'relativa']:
             ruta_norm = normalizar_ruta(ruta_resuelta_o_original)
             key_to_check = ruta_norm
             logger.debug(f"  -> Ruta normalizada interna/rota: '{ruta_norm}'") # DEBUG
             if ruta_norm in archivos_proyecto:
                  if ruta_norm not in rutas_procesadas:
-                      dep_info = DependencyInfo(tipo='interna', path=ruta_norm)
-                      logger.debug("    -> Clasificado como: INTERNA") # DEBUG
+                      dep_info = DependencyInfo(type='internal', path=ruta_norm)
+                      logger.debug("    -> Clasificado como: INTERNAL") # DEBUG
             else:
                  if ruta_norm not in rutas_procesadas:
-                      dep_info = DependencyInfo(tipo='interna_rota', path=ruta_norm)
-                      logger.debug("    -> Clasificado como: INTERNA_ROTA") # DEBUG
+                      dep_info = DependencyInfo(type='internal_broken', path=ruta_norm)
+                      logger.debug("    -> Clasificado como: INTERNAL_BROKEN") # DEBUG
         else:
-             logger.debug(f"  -> Tipo referencia no manejado para clasificación: '{tipo_ref}'") # DEBUG
+             logger.debug(f"  -> type referencia no manejado para clasificación: '{type_ref}'") # DEBUG
 
         if dep_info and key_to_check not in rutas_procesadas:
              dependencias_clasificadas.append(dep_info)
@@ -148,7 +148,7 @@ def analizar_css(
         elif dep_info:
              logger.debug(f"  -> Duplicado omitido: '{key_to_check}'") # DEBUG
 
-    dependencias_clasificadas.sort(key=lambda x: (x['tipo'], x['path']))
+    dependencias_clasificadas.sort(key=lambda x: (x['type'], x['path']))
     logger.debug(f"Dependencias CSS finales clasificadas: {dependencias_clasificadas}") # DEBUG
 
     return dependencias_clasificadas

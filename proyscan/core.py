@@ -174,7 +174,7 @@ def ejecutar_escaneo(
         logger.exception(f"Error al generar {ARCHIVO_ESTRUCTURA}") # logger.exception incluye traceback
 
     # 2. Archivo JSON
-    datos_json_final: OutputJson = {"archivos": lista_final_archivos}
+    datos_json_final: OutputJson = {"files": lista_final_archivos}
     try:
         logger.info(f"Generando {ARCHIVO_CONTENIDO}...")
         with open(ruta_salida_contenido, 'w', encoding='utf-8') as f:
