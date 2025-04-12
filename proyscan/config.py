@@ -24,15 +24,54 @@ EXTENSIONES_BINARIAS = {
 }
 
 MAPA_LENGUAJES = {
-    # ... (mapa sin cambios) ...
-    '.py': 'python', '.js': 'javascript', '.html': 'html', '.htm': 'html',
-    '.css': 'css', '.json': 'json', '.xml': 'xml', '.yaml': 'yaml', '.yml': 'yaml',
-    '.md': 'markdown', '.txt': 'text', '.log': 'log', '.sh': 'shell',
-    '.bash': 'shell', '.zsh': 'shell', '.bat': 'batch', '.cmd': 'batch',
-    '.ps1': 'powershell', '.java': 'java', '.c': 'c', '.cpp': 'cpp',
-    '.cs': 'csharp', '.go': 'go', '.php': 'php', '.rb': 'ruby',
-    '.swift': 'swift', '.kt': 'kotlin', '.rs': 'rust', '.sql': 'sql',
-    '.r': 'r', '.R': 'r', '.pl': 'perl',
+    # Web Frontend
+    '.html': 'html', '.htm': 'html',
+    '.css': 'css', '.scss': 'scss', '.sass': 'sass', '.less': 'less', # CSS Preprocessors
+    '.js': 'javascript', '.mjs': 'javascript', '.cjs': 'javascript',
+    '.jsx': 'jsx', # JavaScript con JSX
+    '.ts': 'typescript', # TypeScript
+    '.tsx': 'tsx', # TypeScript con JSX
+    '.vue': 'vue', # Vue.js Single File Components
+
+    # Web Backend / General
+    '.py': 'python',
+    '.php': 'php',
+    '.java': 'java', # Java
+    '.cs': 'csharp', # C#
+    '.go': 'go',
+    '.rb': 'ruby',
+    '.rs': 'rust',
+    '.swift': 'swift',
+    '.kt': 'kotlin', # Kotlin
+    '.scala': 'scala', # Scala
+
+    # Datos y Configuración
+    '.json': 'json',
+    '.xml': 'xml',
+    '.yaml': 'yaml', '.yml': 'yaml',
+    '.toml': 'toml',
+    '.ini': 'ini',
+    '.env': 'env',
+    '.sql': 'sql',
+    '.graphql': 'graphql', '.gql': 'graphql',
+
+    # Scripting / Shell
+    '.sh': 'shell', '.bash': 'shell', '.zsh': 'shell',
+    '.bat': 'batch', '.cmd': 'batch',
+    '.ps1': 'powershell',
+    '.pl': 'perl',
+    '.lua': 'lua',
+
+    # Documentación / Texto
+    '.md': 'markdown',
+    '.txt': 'text',
+    '.log': 'log',
+    '. R': 'r', '.r': 'r',
+
+    # Otros (pueden requerir análisis más específico)
+    '.c': 'c',
+    '.cpp': 'cpp', '.cxx': 'cpp', '.cc': 'cpp', '.hpp': 'cpp', '.hxx': 'cpp', '.h': 'c', # C/C++ Headers también
+    # Añadir más según sea necesario
 }
 LENGUAJE_DEFECTO = 'text'
 

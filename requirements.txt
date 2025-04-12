@@ -7,3 +7,4 @@ tinycss2
 rich
 questionary
 datetime
+javalang

@@ -12,6 +12,7 @@ import subprocess # Para abrir explorador
 import platform # Para detectar OS
 from datetime import datetime # Para parsear timestamp
 from rich.console import Console
+from rich.prompt import Prompt
 from rich.panel import Panel
 from rich.table import Table # Importar Tabla de Rich
 
@@ -25,6 +26,28 @@ except ImportError as e:
      print(f"Error crítico de importación en cli.py: {e}", file=sys.stderr)
      print("Asegúrate de que la estructura del proyecto es correcta.", file=sys.stderr)
      sys.exit(1)
+
+# --- Importar el navegador TUI ---
+# --- Importar con manejo de error MÁS EXPLÍCITO ---
+tui_browser_available = False
+browse_for_directory = None
+try:
+    from .tui_browser import browse_for_directory
+    tui_browser_available = True
+    # Si llegamos aquí, la importación fue exitosa
+except ImportError as e_import:
+    # Este error ocurriría si falta una dependencia fundamental de tui_browser
+    # o hay un error de sintaxis EN tui_browser.py que impide importarlo.
+    print(f"[ERROR] No se pudo importar el módulo TUI: {e_import}", file=sys.stderr)
+    print("        Asegúrate de que las dependencias (rich, questionary, prompt-toolkit) estén instaladas.", file=sys.stderr)
+    # No salimos aquí, pero tui_browser_available será False
+except Exception as e_general_import:
+    # Capturar otros posibles errores durante la importación del módulo TUI
+    print(f"[ERROR] Error inesperado al importar el módulo TUI:", file=sys.stderr)
+    import traceback
+    traceback.print_exc() # Imprimir traceback completo del error de importación
+    # No salimos, pero tui_browser_available será False
+# ----------------------------------------------------
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -76,53 +99,89 @@ def mostrar_configuracion_actual(config: dict):
 # Dejamos los placeholders actuales por ahora, pero usamos la config para sugerencias
 
 def seleccionar_directorio_proyecto(ultimo_conocido=None):
-    """Pide al usuario la ruta del proyecto con validación."""
-    mensaje = "Introduce la ruta al directorio del proyecto"
-    default_val = ultimo_conocido if ultimo_conocido and os.path.isdir(ultimo_conocido) else ""
-    if default_val:
-        mensaje += f" (Enter para usar último: '{default_val}')"
-    mensaje += ":"
+    """Pide al usuario la ruta del proyecto usando TUI o fallback."""
+    console.print(Panel("Selecciona el Directorio del Proyecto", style="bold green"))
+    console.print("Navega con [↑/↓/PgUp/PgDn], entra con [Enter], selecciona directorio actual con [S], sal con [Esc/Q].")
+    console.print("Alternativamente, pulsa [M] para introducir la ruta manualmente.")
 
-    while True: # Bucle hasta obtener ruta válida o cancelar
-        ruta = questionary.text(
-            mensaje,
-            default=default_val,
-            validate=validar_directorio # Usar validador
-        ).ask() # Usar ask() que devuelve None si se cancela (Ctrl+C)
+    opcion = questionary.select(
+        "¿Cómo quieres seleccionar el directorio?",
+        choices=[
+            questionary.Choice("Usar Navegador TUI", value="browse", shortcut_key='n'),
+            questionary.Choice("Introducir Ruta Manualmente", value="manual", shortcut_key='m'),
+            questionary.Choice("Cancelar", value="cancel", shortcut_key='c')
+        ]
+    ).ask()
 
-        if ruta is None: # Cancelado por el usuario
-             return None
-        elif ruta == "" and default_val:
-             console.print(f"[dim]Usando último directorio: {default_val}[/dim]")
-             return default_val
-        elif ruta and os.path.isdir(ruta):
-             return os.path.abspath(ruta)
-        elif ruta == "": # Si no había default y se presiona Enter
-             console.print("[yellow]Por favor, introduce una ruta válida.[/yellow]")
+    if opcion == "browse" and browse_for_directory:
+        start_dir = ultimo_conocido if ultimo_conocido and os.path.isdir(ultimo_conocido) else "."
+        selected_path = browse_for_directory(start_path=start_dir)
+        return selected_path # Puede ser None si se canceló
+    elif opcion == "manual" or (opcion == "browse" and not browse_for_directory):
+        if opcion == "browse":
+            console.print("[yellow]Navegador TUI no disponible, introduciendo ruta manualmente.[/yellow]")
+        # Lógica anterior con questionary.text
+        mensaje = "Introduce la ruta al directorio del proyecto"
+        default_val = ultimo_conocido if ultimo_conocido and os.path.isdir(ultimo_conocido) else ""
+        if default_val: mensaje += f" (Enter para usar último: '{default_val}')"
+        mensaje += ":"
+        while True:
+            ruta = questionary.text(mensaje, default=default_val, validate=validar_directorio).ask()
+            if ruta is None: return None
+            elif ruta == "" and default_val: console.print(f"[dim]Usando último directorio: {default_val}[/dim]"); return default_val
+            elif ruta and os.path.isdir(ruta): return os.path.abspath(ruta)
+            elif ruta == "": console.print("[yellow]Por favor, introduce una ruta válida.[/yellow]")
+    else: # Cancelar
+        return None
+
 
 
 def seleccionar_directorio_salida(predeterminado_config=None):
-    """Pide al usuario la ruta de salida con validación."""
+    """Pide al usuario la ruta de salida usando TUI o fallback."""
+    console.print(Panel("Selecciona el Directorio de Salida Base", style="bold green"))
+    console.print("Navega con [↑/↓/PgUp/PgDn], entra con [Enter], selecciona directorio actual con [S], sal con [Esc/Q].")
+    console.print("Alternativamente, pulsa [M] para introducir la ruta manualmente.")
+
     predeterminado_real = predeterminado_config if predeterminado_config else obtener_ruta_salida_predeterminada_global()
-    mensaje = f"Introduce la ruta para guardar los resultados (Enter para usar: '{predeterminado_real}'):"
 
-    while True:
-        ruta = questionary.text(
-            mensaje,
-            default="", # No poner el default aquí, se maneja abajo
-            validate=validar_ruta_salida # Usar validador
-        ).ask()
+    opcion = questionary.select(
+        "¿Cómo quieres seleccionar el directorio de salida?",
+        choices=[
+            questionary.Choice("Usar Navegador TUI", value="browse", shortcut_key='n'),
+            questionary.Choice("Introducir Ruta Manualmente", value="manual", shortcut_key='m'),
+            questionary.Choice("Usar Predeterminado", value="default", shortcut_key='p'),
+            questionary.Choice("Cancelar", value="cancel", shortcut_key='c')
+        ],
+        default="default"
+    ).ask()
 
-        if ruta is None: # Cancelado
-            return None
-        elif ruta == "":
-             console.print(f"[dim]Usando directorio de salida predeterminado: {predeterminado_real}[/dim]")
-             # Asegurarse de que exista al final
-             return predeterminado_real
-        else:
-             abs_ruta = os.path.abspath(ruta)
-             # La validación ya comprobó si es un dir existente o si se puede crear
-             return abs_ruta
+    if opcion == "browse" and browse_for_directory:
+         start_dir = predeterminado_real if os.path.isdir(predeterminado_real) else "."
+         selected_path = browse_for_directory(start_path=start_dir)
+         # Validar si se seleccionó algo y si es escribible
+         if selected_path:
+              if validar_ruta_salida(selected_path) is True:
+                   return selected_path
+              else:
+                   # Mostrar error de validación
+                   console.print(f"[red]Error: {validar_ruta_salida(selected_path)}[/red]")
+                   return None # Falló la validación
+         else:
+              return None # Cancelado en TUI
+    elif opcion == "manual" or (opcion == "browse" and not browse_for_directory):
+        if opcion == "browse":
+            console.print("[yellow]Navegador TUI no disponible, introduciendo ruta manualmente.[/yellow]")
+        mensaje = f"Introduce la ruta para guardar los resultados (Enter para usar predeterminado: '{predeterminado_real}'):"
+        while True:
+            ruta = questionary.text(mensaje, default="", validate=validar_ruta_salida).ask()
+            if ruta is None: return None
+            elif ruta == "": console.print(f"[dim]Usando directorio predeterminado: {predeterminado_real}[/dim]"); return predeterminado_real
+            else: return os.path.abspath(ruta) # Validación ya hecha por questionary
+    elif opcion == "default":
+         console.print(f"[dim]Usando directorio predeterminado: {predeterminado_real}[/dim]")
+         return predeterminado_real
+    else: # Cancelar
+        return None
 
 def configurar_ignore_interactivo(directorio_objetivo: str) -> Optional[str]:
     """Permite al usuario seleccionar patrones y genera un .ignore temporal."""
