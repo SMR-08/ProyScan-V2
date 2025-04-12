@@ -163,12 +163,3 @@ IGNORE_WHEN_COPYING_END
     *   Soporte Otros Lenguajes: Añadir análisis para C#, C++, Ruby, Go, etc.
     *   Visualización: Exportar grafo de dependencias.
     *   Empaquetado: Facilitar instalación con `pip install proyscan`.
-
-#### Contribuciones
-
-(Sección opcional para indicar cómo contribuir, reportar bugs, etc.)
-
-#### Licencia
-
-(Sección opcional para indicar la licencia del proyecto, ej: MIT)
-```
