@@ -2,6 +2,10 @@
 # Define estructuras de datos para mejorar la claridad y el tipado
 from typing import TypedDict, List, Optional, Dict, Any
 
+class DependencyInfo(TypedDict):
+    type: str # 'interna', 'externa', 'interna_rota', 'desconocida', 'url', 'biblioteca'
+    path: str # Ruta resuelta (si es interna) o nombre/url original
+
 # Metadatos asociados a cada archivo en el JSON
 class Metadata(TypedDict):
     path: str
@@ -10,9 +14,9 @@ class Metadata(TypedDict):
     encoding: Optional[str]
     language: Optional[str]
     line_count: Optional[int]
-    # Campo para futuras dependencias (Fase 1+)
-    dependencias: Optional[List[Dict[str, str]]] # Ej: [{'tipo': 'interna', 'path': '...'}, ...]
-
+    dependencies: Optional[List[DependencyInfo]]
+    referenced_by: Optional[List[str]] 
+    
 # Objeto completo para un archivo en la lista final del JSON
 class FileObject(TypedDict):
     metadata: Metadata
@@ -21,9 +25,14 @@ class FileObject(TypedDict):
 
 # Estructura del JSON de salida final
 class OutputJson(TypedDict):
-    archivos: List[FileObject]
+    files: List[FileObject] 
 
 # Estructura para dependencias (Fase 1+)
-class DependencyInfo(TypedDict):
-    tipo: str # 'interna', 'externa', 'interna_rota', 'desconocida', 'url', 'biblioteca'
-    path: str # Ruta resuelta (si es interna) o nombre/url original
+
+class ScanInfo(TypedDict):
+    project_name: str
+    original_project_path: str
+    scan_timestamp: str # ISO 8601 format
+    scan_id: str
+    output_directory: str
+    parameters_used: Dict[str, Any] # ej: {'debug_mode': True, 'ignore_file_used': 'temporal'}

@@ -1,13 +1,19 @@
 # proyscan/dependency_analysis/analyzer.py
+import logging
 from typing import List, Optional, Set, Dict
 
-# Importar parsers específicos
+# Importar todos los parsers
 from .python_parser import analizar_python
-from .regex_parser import analizar_regex # Lo mantenemos para JS y PHP por ahora
-from .html_parser import analizar_html   # Nuevo parser HTML
-from .css_parser import analizar_css     # Nuevo parser CSS
-# Importar el modelo
+from .regex_parser import analizar_regex
+from .html_parser import analizar_html
+from .css_parser import analizar_css
+from .java_parser import analizar_java
+from .vue_parser import analizar_vue
+
 from ..models import DependencyInfo
+
+logger = logging.getLogger(__name__)
+
 
 def analizar_dependencias(
     contenido: List[str],
@@ -16,23 +22,26 @@ def analizar_dependencias(
     archivos_proyecto: Set[str],
     dir_proyecto: str
 ) -> Optional[List[DependencyInfo]]:
-    """
-    Función principal para analizar dependencias de un archivo.
-    Selecciona el método adecuado según el lenguaje.
-    """
+    logger.debug(f"Analizador principal llamado para: {ruta_archivo} (Lenguaje: {lenguaje})")
 
     if lenguaje == 'python':
         return analizar_python(contenido, ruta_archivo, archivos_proyecto)
-    # --- Usar parsers específicos para HTML y CSS ---
     elif lenguaje == 'html':
         return analizar_html(contenido, ruta_archivo, archivos_proyecto)
-    elif lenguaje == 'css':
+    elif lenguaje in ['css', 'scss', 'sass', 'less']:
         return analizar_css(contenido, ruta_archivo, archivos_proyecto)
-    # ----------------------------------------------
-    # --- Mantener Regex para JS y PHP por ahora ---
-    elif lenguaje in ['javascript', 'php']:
+    elif lenguaje == 'java':
+        return analizar_java(contenido, ruta_archivo, archivos_proyecto)
+    # --- LLAMAR AL PARSER DE VUE ---
+    elif lenguaje == 'vue':
+        return analizar_vue(contenido, ruta_archivo, archivos_proyecto, dir_proyecto)
+    # ------------------------------
+    elif lenguaje in [ # Solo quedan JS/TS/PHP/JSX/TSX aquí
+        'javascript', 'typescript', 'jsx', 'tsx',
+        'php',
+        ]:
+        logger.debug(f"Usando parser Regex para lenguaje: {lenguaje}")
         return analizar_regex(contenido, lenguaje, ruta_archivo, archivos_proyecto, dir_proyecto)
-    # ----------------------------------------------
     else:
-        # Lenguaje no soportado
+        logger.debug(f"Análisis de dependencias no implementado o no aplicable para lenguaje: {lenguaje}")
         return None

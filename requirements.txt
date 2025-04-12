@@ -1,5 +1,10 @@
 # Dependencias para ProyScan
 chardet
 beautifulsoup4
-lxml         # Parser eficiente recomendado para BeautifulSoup
+lxml         
 tinycss2
+# --- Nuevas para CLI ---
+rich
+questionary
+datetime
+javalang
