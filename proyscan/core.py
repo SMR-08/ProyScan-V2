@@ -1,6 +1,7 @@
 # proyscan/core.py
 import os
 import json
+import datetime
 import logging # Importar logging
 from typing import List, Set, Dict, Any, Optional
 
@@ -14,7 +15,7 @@ from .utils.file_utils import leer_lineas_texto
 from .utils.path_utils import obtener_lenguaje_extension, normalizar_ruta
 from .tree_generator import generar_arbol_texto
 from .dependency_analysis.analyzer import analizar_dependencias
-from .models import FileObject, Metadata, OutputJson
+from .models import FileObject, Metadata, OutputJson, ScanInfo
 
 # Obtener un logger para este módulo
 logger = logging.getLogger(__name__) # Usa 'proyscan.core'
@@ -179,6 +180,11 @@ def ejecutar_escaneo(
     logger.info("Fase 3: Generando archivos de salida...")
     ruta_salida_estructura = os.path.join(directorio_salida_escaneo, ARCHIVO_ESTRUCTURA)
     ruta_salida_contenido = os.path.join(directorio_salida_escaneo, ARCHIVO_CONTENIDO)
+    ruta_salida_info = os.path.join(directorio_salida_escaneo, "scan_info.json") 
+
+    timestamp_actual = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    nombre_base_proyecto = os.path.basename(directorio_objetivo)
+    id_escaneo = os.path.basename(directorio_salida_escaneo).split('-')[-1] # Extraer ID de la ruta
 
     # 1. Archivo de Estructura
     try:
@@ -198,5 +204,26 @@ def ejecutar_escaneo(
         logger.info(f"Archivo JSON guardado en: {ruta_salida_contenido}")
     except Exception as e:
         logger.exception(f"Error al escribir {ARCHIVO_CONTENIDO}")
+
+    # --- 3. Crear archivo scan_info.json ---
+    info_escaneo: ScanInfo = {
+        "project_name": nombre_base_proyecto,
+        "original_project_path": directorio_objetivo,
+        "scan_timestamp": timestamp_actual,
+        "scan_id": id_escaneo,
+        "output_directory": directorio_salida_escaneo,
+        "parameters_used": {
+            "debug_mode": debug_mode,
+            "specific_ignore_file": ruta_ignore_especifica if ruta_ignore_especifica else None
+        }
+    }
+    try:
+        logger.info(f"Generando scan_info.json...")
+        with open(ruta_salida_info, 'w', encoding='utf-8') as f:
+            json.dump(info_escaneo, f, indent=4)
+        logger.info(f"Información del escaneo guardada en: {ruta_salida_info}")
+    except Exception as e:
+        # No es crítico si esto falla, pero loggearlo
+        logger.error(f"No se pudo guardar scan_info.json: {e}", exc_info=True)
 
     logger.info("¡Proceso completado!")

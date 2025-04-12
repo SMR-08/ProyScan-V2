@@ -5,11 +5,17 @@ import logging
 import questionary
 import random
 import string
-from typing import Optional
-import tempfile # Para crear archivo temporal
+import tempfile
+import json # Para leer scan_info.json
+import shutil # Para borrar directorios
+import subprocess # Para abrir explorador
+import platform # Para detectar OS
+from datetime import datetime # Para parsear timestamp
 from rich.console import Console
 from rich.panel import Panel
-from rich.text import Text
+from rich.table import Table # Importar Tabla de Rich
+
+from typing import Optional
 
 try:
     from .core import ejecutar_escaneo
@@ -268,11 +274,167 @@ def ejecutar_flujo_escaneo():
         console.print(f"\n[bold red]ERROR durante el escaneo:[/bold red]")
         logger.critical("Error no capturado durante la ejecución del escaneo:", exc_info=True)
 
+def abrir_carpeta_explorador(ruta: str):
+    """Intenta abrir la carpeta dada en el explorador de archivos del sistema."""
+    try:
+        if platform.system() == "Windows":
+            # Asegurarse de que la ruta sea válida para Windows Explorer
+            os.startfile(os.path.normpath(ruta))
+        elif platform.system() == "Darwin": # macOS
+            subprocess.run(["open", ruta], check=True)
+        else: # Linux y otros Unix-like
+            subprocess.run(["xdg-open", ruta], check=True)
+        console.print(f"[green]Intentando abrir carpeta:[/green] {ruta}")
+    except FileNotFoundError:
+        console.print(f"[red]Error: No se encontró la carpeta '{ruta}' o el comando para abrirla no está disponible.[/red]")
+    except Exception as e:
+        console.print(f"[red]Error al intentar abrir la carpeta '{ruta}': {e}[/red]")
+        logger.error(f"Error abriendo explorador en {ruta}", exc_info=True)
 
 def gestionar_escaneos():
-    # Placeholder Fase C
-    console.print("[yellow](Placeholder) Gestión de escaneos aún no implementada.[/yellow]")
+    """Muestra escaneos guardados y permite interactuar."""
+    logger.info("Accediendo al gestor de escaneos...")
+    config = cargar_config()
+    # Usar el directorio predeterminado global como base si no hay nada en config
+    directorio_base_resultados_config = config.get("default_output_dir")
+    directorio_base_resultados = directorio_base_resultados_config if directorio_base_resultados_config else obtener_ruta_salida_predeterminada_global()
+    
+    console.print(f"\n--- Gestión de Escaneos (en: {directorio_base_resultados}) ---", style="bold blue")
 
+    if not os.path.isdir(directorio_base_resultados):
+        console.print(f"[yellow]El directorio de resultados '{directorio_base_resultados}' no existe. No hay escaneos que mostrar.[/yellow]")
+        return
+
+    escaneos_encontrados = []
+    try:
+        for nombre_item in os.listdir(directorio_base_resultados):
+            ruta_item = os.path.join(directorio_base_resultados, nombre_item)
+            ruta_info = os.path.join(ruta_item, "scan_info.json")
+            if os.path.isdir(ruta_item) and os.path.exists(ruta_info):
+                try:
+                    with open(ruta_info, 'r', encoding='utf-8') as f_info:
+                        info = json.load(f_info)
+                        # Añadir la ruta completa del directorio del escaneo para referencia
+                        info['_scan_dir_path'] = ruta_item
+                        escaneos_encontrados.append(info)
+                except Exception as e_read:
+                    logger.warning(f"No se pudo leer o parsear '{ruta_info}': {e_read}")
+                    # Podríamos añadir un placeholder si falla la lectura
+                    escaneos_encontrados.append({
+                        "project_name": nombre_item.split('-')[0],
+                        "scan_id": nombre_item.split('-')[-1],
+                        "scan_timestamp": "Error al leer",
+                        "original_project_path": "Error al leer",
+                        "_scan_dir_path": ruta_item,
+                        "_error": True
+                    })
+
+    except OSError as e_list:
+        console.print(f"[red]Error al listar el directorio de resultados '{directorio_base_resultados}': {e_list}[/red]")
+        return
+
+    if not escaneos_encontrados:
+        console.print("[yellow]No se encontraron escaneos guardados en el directorio especificado.[/yellow]")
+        return
+
+    # Ordenar por fecha (más reciente primero)
+    escaneos_encontrados.sort(key=lambda x: x.get('scan_timestamp', '0'), reverse=True)
+
+    # Crear tabla con Rich
+    tabla = Table(title="Escaneos Guardados", show_header=True, header_style="bold magenta")
+    tabla.add_column("ID", style="dim", width=8)
+    tabla.add_column("Proyecto", style="cyan", no_wrap=True)
+    tabla.add_column("Fecha Escaneo", style="green")
+    tabla.add_column("Ruta Original", style="yellow", overflow="fold") # fold para ajustar texto largo
+
+    choices_gestor = []
+    for i, escaneo in enumerate(escaneos_encontrados):
+        scan_id = escaneo.get('scan_id', 'N/A')
+        proyecto = escaneo.get('project_name', 'Desconocido')
+        timestamp_str = escaneo.get('scan_timestamp', 'N/A')
+        ruta_orig = escaneo.get('original_project_path', 'N/A')
+        scan_dir = escaneo.get('_scan_dir_path', '')
+        has_error = escaneo.get('_error', False)
+
+        fecha_formateada = "Error"
+        if timestamp_str != "Error" and timestamp_str != "N/A":
+            try:
+                # Intentar parsear con o sin 'Z' y microsegundos variables
+                dt_obj = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                fecha_formateada = dt_obj.strftime('%Y-%m-%d %H:%M:%S %Z')
+            except ValueError:
+                 fecha_formateada = timestamp_str # Mostrar como está si falla el parseo
+
+        # Añadir a la tabla
+        tabla.add_row(
+            scan_id if not has_error else f"[red]{scan_id}[/red]",
+            proyecto if not has_error else f"[red]{proyecto}[/red]",
+            fecha_formateada,
+            ruta_orig if not has_error else f"[red]{ruta_orig}[/red]"
+        )
+        # Añadir a las choices para questionary
+        choices_gestor.append(questionary.Choice(
+            # Mostrar ID y nombre de proyecto en la opción
+            title=f"{scan_id} - {proyecto} ({fecha_formateada})",
+            value=i # Usar el índice como valor para identificar la selección
+        ))
+
+    choices_gestor.append(questionary.Separator())
+    choices_gestor.append(questionary.Choice(title="Volver al Menú Principal", value="back"))
+
+    console.print(tabla)
+
+    # Preguntar al usuario qué hacer
+    seleccion_idx = questionary.select(
+        "Selecciona un escaneo para ver opciones (o vuelve):",
+        choices=choices_gestor
+    ).ask()
+
+    if seleccion_idx == "back" or seleccion_idx is None:
+        return # Volver al menú principal
+
+    # Obtener el escaneo seleccionado (asegurarse de que el índice es válido)
+    if isinstance(seleccion_idx, int) and 0 <= seleccion_idx < len(escaneos_encontrados):
+        escaneo_sel = escaneos_encontrados[seleccion_idx]
+        ruta_escaneo_sel = escaneo_sel.get('_scan_dir_path')
+
+        if not ruta_escaneo_sel:
+             console.print("[red]Error interno: No se encontró la ruta del escaneo seleccionado.[/red]")
+             return
+
+        # Mostrar opciones para el escaneo seleccionado
+        opcion_escaneo = questionary.select(
+            f"Acciones para '{escaneo_sel.get('project_name', 'N/A')}-{escaneo_sel.get('scan_id', 'N/A')}':",
+            choices=[
+                "1. Abrir Carpeta de Resultados",
+                "2. Borrar este Escaneo",
+                questionary.Separator(),
+                "3. Volver",
+            ],
+            use_shortcuts=True
+        ).ask()
+
+        if opcion_escaneo is None or opcion_escaneo.startswith("3."):
+            gestionar_escaneos() # Volver a mostrar la lista
+        elif opcion_escaneo.startswith("1."):
+            abrir_carpeta_explorador(ruta_escaneo_sel)
+            gestionar_escaneos() # Volver a la lista después de intentar abrir
+        elif opcion_escaneo.startswith("2."):
+            if questionary.confirm(f"¿SEGURO que quieres borrar el escaneo '{os.path.basename(ruta_escaneo_sel)}'? Esta acción NO se puede deshacer.", default=False).ask():
+                try:
+                    shutil.rmtree(ruta_escaneo_sel)
+                    console.print(f"[bold red]Escaneo borrado:[/bold red] {ruta_escaneo_sel}")
+                except Exception as e_del:
+                    console.print(f"[red]Error al borrar el directorio '{ruta_escaneo_sel}': {e_del}[/red]")
+                    logger.error(f"Error borrando directorio {ruta_escaneo_sel}", exc_info=True)
+                gestionar_escaneos() # Volver a la lista (actualizada)
+            else:
+                console.print("[yellow]Borrado cancelado.[/yellow]")
+                gestionar_escaneos() # Volver a la lista
+    else:
+         console.print("[red]Selección inválida.[/red]")
+         gestionar_escaneos() # Volver a mostrar
+    
 def configurar_opciones():
     """Permite al usuario ver y modificar la configuración."""
     logger.info("Accediendo al menú de configuración...")

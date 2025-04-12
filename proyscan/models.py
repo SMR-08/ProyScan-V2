@@ -3,7 +3,7 @@
 from typing import TypedDict, List, Optional, Dict, Any
 
 class DependencyInfo(TypedDict):
-    tipo: str # 'interna', 'externa', 'interna_rota', 'desconocida', 'url', 'biblioteca'
+    type: str # 'interna', 'externa', 'interna_rota', 'desconocida', 'url', 'biblioteca'
     path: str # Ruta resuelta (si es interna) o nombre/url original
 
 # Metadatos asociados a cada archivo en el JSON
