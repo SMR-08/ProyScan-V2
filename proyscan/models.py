@@ -14,8 +14,8 @@ class Metadata(TypedDict):
     encoding: Optional[str]
     language: Optional[str]
     line_count: Optional[int]
-    # Campo para futuras dependencias (Fase 1+)
-    dependencies: Optional[List[DependencyInfo]] # Renombrado
+    dependencies: Optional[List[DependencyInfo]]
+    referenced_by: Optional[List[str]] 
     
 # Objeto completo para un archivo en la lista final del JSON
 class FileObject(TypedDict):

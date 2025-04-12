@@ -15,7 +15,7 @@ from .utils.file_utils import leer_lineas_texto
 from .utils.path_utils import obtener_lenguaje_extension, normalizar_ruta
 from .tree_generator import generar_arbol_texto
 from .dependency_analysis.analyzer import analizar_dependencias
-from .models import FileObject, Metadata, OutputJson, ScanInfo
+from .models import FileObject, Metadata, OutputJson, ScanInfo, DependencyInfo
 
 # Obtener un logger para este módulo
 logger = logging.getLogger(__name__) # Usa 'proyscan.core'
@@ -26,7 +26,7 @@ def ejecutar_escaneo(
     nombre_script_ignorar: Optional[str],
     directorio_salida_escaneo: str,
     debug_mode: bool,
-    ruta_ignore_especifica: Optional[str] = None # Nuevo parámetro
+    ruta_ignore_especifica: Optional[str] = None
 ):
     """
     Función principal que ejecuta todo el proceso de escaneo y generación.
@@ -66,6 +66,7 @@ def ejecutar_escaneo(
     lista_final_archivos: List[FileObject] = []
     items_ignorados_arbol: Set[str] = set()
     archivos_del_proyecto: Set[str] = set()
+    dependencias_inversas: Dict[str, Set[str]] = {}
 
     # --- Fase 1 (usar logger) ---
     logger.info("Fase 1: Identificando archivos del proyecto...")
@@ -113,22 +114,18 @@ def ejecutar_escaneo(
     logger.info(f"Fase 1: {len(archivos_del_proyecto)} archivos identificados para procesamiento.")
     logger.debug(f"Archivos a procesar (set): {archivos_del_proyecto}") # NUEVO DEBUG
     logger.debug(f"Items a ignorar en árbol (set): {items_ignorados_arbol}") # NUEVO DEBUG
-    # --- Fase 2 (usar logger) ---
-    logger.info("Fase 2: Procesando archivos y extrayendo información...")
+
+    # --- Fase 2: Procesar archivos y CONSTRUIR ÍNDICE INVERSO ---
+    logger.info("Fase 2: Procesando archivos, extrayendo info y dependencias...")
     for ruta_relativa_norm in sorted(list(archivos_del_proyecto)):
         ruta_completa = os.path.join(directorio_objetivo, ruta_relativa_norm.replace('/', os.sep))
-        logger.info(f"  - Procesando: {ruta_relativa_norm}") # INFO es suficiente aquí
+        logger.info(f"  - Procesando: {ruta_relativa_norm}")
 
-        metadata: Metadata = {
-            "path": ruta_relativa_norm,
-            "size_bytes": None, "status": "unknown", "encoding": None,
-            "language": None, "line_count": None, "dependencies": None
-        }
-        file_object: FileObject = { # ... (inicialización igual) ...
-            "metadata": metadata, "content_lines": None, "error_message": None }
+        metadata: Metadata = { "path": ruta_relativa_norm, "size_bytes": None, "status": "unknown", "encoding": None, "language": None, "line_count": None, "dependencies": None, "referenced_by": None }
+        file_object: FileObject = { "metadata": metadata, "content_lines": None, "error_message": None }
+        lista_dependencias_actual: Optional[List[DependencyInfo]] = None # Definir ANTES del try
 
         try:
-            # ... (lógica de obtener tamaño, lenguaje, etc. igual) ...
             tamano_archivo = os.path.getsize(ruta_completa)
             metadata["size_bytes"] = tamano_archivo
             lenguaje = obtener_lenguaje_extension(ruta_relativa_norm)
@@ -136,11 +133,10 @@ def ejecutar_escaneo(
             extension = os.path.splitext(ruta_relativa_norm)[1]
 
             if extension.lower() in EXTENSIONES_BINARIAS:
-                logger.debug(f"      * Binario por extensión ({extension})") # DEBUG
                 metadata["status"] = "binary"
                 file_object["error_message"] = f"Contenido omitido (extensión binaria: {extension})"
+                logger.debug(f"      * Binario por extensión ({extension})")
             else:
-                # ... (llamada a leer_lineas_texto igual) ...
                 estado, codificacion, lineas_o_error = leer_lineas_texto(ruta_completa, tamano_archivo)
                 metadata["status"] = estado
                 metadata["encoding"] = codificacion
@@ -151,30 +147,47 @@ def ejecutar_escaneo(
                     metadata["line_count"] = len(lineas_contenido)
 
                     if ANALIZAR_DEPENDENCIAS and lineas_contenido is not None:
-                         # La función analizar_dependencias y sus subparsers usarán sus propios loggers
                          lista_dependencias = analizar_dependencias(
                              lineas_contenido, lenguaje, ruta_relativa_norm,
                              archivos_del_proyecto, directorio_objetivo
                          )
-                         metadata["dependencies"] = lista_dependencias 
+                         metadata["dependencies"] = lista_dependencias
+                         lista_dependencias_actual = lista_dependencias # Guardar para índice inverso
+
+                         # --- POBLAR ÍNDICE INVERSO (MOVIDO AQUÍ DENTRO) ---
+                         if lista_dependencias_actual:
+                             for dependencia in lista_dependencias_actual:
+                                 if dependencia.get("type") == "internal":
+                                     ruta_dependencia = dependencia.get("path")
+                                     if ruta_dependencia:
+                                         dependencias_inversas.setdefault(ruta_dependencia, set()).add(ruta_relativa_norm)
+                                         logger.debug(f"Índice Inverso: '{ruta_relativa_norm}' depende de '{ruta_dependencia}'")
+                         # -----------------------------------------------
+
                 elif estado in ["read_error", "too_large"]:
-                     # Usar logger.warning para advertencias visibles
                      logger.warning(f"      * Estado: {estado} en {ruta_relativa_norm} - {lineas_o_error}")
                      file_object["error_message"] = lineas_o_error
 
-
         except OSError as e:
-             # Usar logger.error para errores de acceso
              logger.error(f"      * Error de acceso/lectura en {ruta_relativa_norm}: {e}")
-             metadata["status"] = "access_error"
-             file_object["error_message"] = str(e)
+             metadata["status"] = "access_error"; file_object["error_message"] = str(e)
         except Exception as e:
-             # Usar logger.exception para errores inesperados (incluye traceback)
              logger.exception(f"      * Error inesperado procesando {ruta_relativa_norm}")
-             metadata["status"] = "processing_error"
-             file_object["error_message"] = str(e) # El traceback se verá en la consola/log
+             metadata["status"] = "processing_error"; file_object["error_message"] = str(e)
 
         lista_final_archivos.append(file_object)
+        # El bloque para poblar dependencias_inversas ya no está aquí fuera.        
+
+    # --- Fase 2.5: Añadir Dependencias Inversas al Metadata ---
+    logger.info("Fase 2.5: Calculando referencias inversas...")
+    for file_object in lista_final_archivos:
+        ruta_archivo_actual = file_object["metadata"]["path"]
+        if ruta_archivo_actual in dependencias_inversas:
+            # Obtener el set de archivos que dependen de este, convertir a lista y ordenar
+            lista_referentes = sorted(list(dependencias_inversas[ruta_archivo_actual]))
+            file_object["metadata"]["referenced_by"] = lista_referentes
+            logger.debug(f"Archivo '{ruta_archivo_actual}' es referenciado por: {lista_referentes}") # DEBUG
+    # --------------------------------------------------------
 
     # --- Fase 3 (usar logger) ---
     logger.info("Fase 3: Generando archivos de salida...")
