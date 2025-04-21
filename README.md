@@ -1,8 +1,7 @@
-```markdown
 # ProyScan V2.1: Escáner Interactivo de Estructura, Contenido y Dependencias
 
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-<!-- Añadir más badges si es relevante: licencia, build status, etc. -->
+main
 
 **ProyScan** es una herramienta de línea de comandos (CLI) escrita en Python diseñada para analizar recursivamente directorios de proyectos. Su objetivo principal es generar una instantánea completa y estructurada del código fuente, incluyendo:
 
@@ -165,11 +164,3 @@ IGNORE_WHEN_COPYING_END
     *   Visualización: Exportar grafo de dependencias.
     *   Empaquetado: Facilitar instalación con `pip install proyscan`.
 
-#### Contribuciones
-
-(Sección opcional para indicar cómo contribuir, reportar bugs, etc.)
-
-#### Licencia
-
-(Sección opcional para indicar la licencia del proyecto, ej: MIT)
-```
