@@ -19,7 +19,10 @@ EXTENSIONES_BINARIAS = {
     '.odt', '.ods', '.odp',
     '.sqlite', '.db', '.mdb',
     '.pyc', '.pyo',
-    '.class', '.jar',
+    '.class',
+    '.jar',  
+    '.war',  
+    '.ear',  
     '.woff', '.woff2', '.ttf', '.otf', '.eot'
 }
 
@@ -93,7 +96,7 @@ PATRONES_IGNORE_COMUNES = {
         ".bzr/": "Directorio de metadatos de Bazaar",
     },
     "Python": {
-        "__pycache__/": "Caché de bytecode de Python",
+        "__pycache__/" : "Caché de bytecode de Python",
         "*.pyc": "Archivos de bytecode compilado",
         "*.pyo": "Archivos de bytecode optimizado (obsoleto)",
         "*.pyd": "Archivos de extensión compilados (Windows)",
@@ -124,6 +127,25 @@ PATRONES_IGNORE_COMUNES = {
         ".npm/": "Caché de NPM",
         ".yarn/": "Metadatos/Caché de Yarn",
         ".pnp.*": "Archivos Plug'n'Play de Yarn",
+    },
+    # --- JAVA ---
+    "Java (Maven/Gradle)": {
+        "target/": "Directorio de salida de Maven",
+        "build/": "Directorio de salida de Gradle (también común)",
+        "*.class": "Archivos de bytecode compilado Java",
+        "*.jar": "Archivos JAR (Java Archive)",
+        "*.war": "Archivos WAR (Web Application Archive)",
+        "*.ear": "Archivos EAR (Enterprise Application Archive)",
+    },
+    # --- REACT ---
+    "React": {
+        "node_modules/": "Dependencias de React (muy grande)",
+        "dist/": "Directorio de distribución/compilación",
+        "build/": "Directorio de construcción",
+        ".env.local": "Variables de entorno locales (Create React App, Next.js, etc.)",
+        ".env.development.local": "Variables de entorno locales de desarrollo",
+        ".env.test.local": "Variables de entorno locales de test",
+        ".env.production.local": "Variables de entorno locales de producción",
     },
     "IDEs y Editores": {
         ".vscode/": "Configuración de VS Code",
@@ -169,6 +191,7 @@ PATRONES_IGNORE_COMUNES = {
         "*.exe": "Ejecutable Windows",
         "*.dll": "Biblioteca Windows",
         "*.so": "Biblioteca Linux",
+        # *.class, *.jar, *.war, *.ear movidos a la sección Java
     }
-    # Añadir más categorías: Java, PHP, Ruby, Go, Docker, Terraform...
+    # Añadir más categorías según sea necesario...
 }
